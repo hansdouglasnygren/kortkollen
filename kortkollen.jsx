@@ -394,13 +394,15 @@ export default function App() {
   }, [userName]);
 
   useEffect(() => {
+    const timer = setTimeout(() => setLoaded(true), 500);
     const unsub = onSnapshot(DATA_DOC, snap => {
+      clearTimeout(timer);
       if (snap.exists()) {
         try { setData(JSON.parse(snap.data().payload)); } catch {}
       }
       setLoaded(true);
-    }, () => setLoaded(true));
-    return unsub;
+    }, () => { clearTimeout(timer); setLoaded(true); });
+    return () => { clearTimeout(timer); unsub(); };
   }, []);
 
   function save(newData) {
@@ -475,7 +477,10 @@ export default function App() {
       <div style={S.header}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
           <div>
-            <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: 26, color: "#d4a847", margin: "0 0 2px", letterSpacing: "-0.3px" }}>KortKollen 🎁</h1>
+            <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: 26, color: "#d4a847", margin: "0 0 2px", letterSpacing: "-0.3px", display: "flex", alignItems: "center", gap: 8 }}>
+              <img src="/icon.png" alt="" style={{ width: 32, height: 32, borderRadius: 8 }} />
+              KortKollen
+            </h1>
             <p style={{ margin: 0, fontSize: 13, color: "#5a5070" }}>Hej, <span style={{ color: "#c0b8d0", fontWeight: 600 }}>{userName}</span></p>
           </div>
           <button onClick={() => { setUserName(null); localStorage.removeItem("kk_user"); }}
@@ -526,7 +531,7 @@ export default function App() {
         {/* Cards */}
         {displayCards.length === 0 ? (
           <div style={{ textAlign: "center", padding: "48px 0", color: "#5a5070" }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🎁</div>
+            <img src="/icon.png" alt="" style={{ width: 72, height: 72, borderRadius: 16, marginBottom: 12, opacity: 0.5 }} />
             <div style={{ fontFamily: "'Fraunces',serif", fontSize: 18, color: "#8a7fa0", marginBottom: 6 }}>
               {showArchived ? "Inga arkiverade kort" : "Inga aktiva kort"}
             </div>
