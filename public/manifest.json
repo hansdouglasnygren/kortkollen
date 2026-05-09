@@ -1,0 +1,17 @@
+{
+  "name": "KortKollen",
+  "short_name": "KortKollen",
+  "description": "Håll koll på era presentkort",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0e0e14",
+  "theme_color": "#d4a847",
+  "icons": [
+    {
+      "src": "https://kortkollen.vercel.app/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
