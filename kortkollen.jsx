@@ -23,6 +23,16 @@ async function saveToFirebase(data) {
 // ─── React ────────────────────────────────────────────────────────────────────
 import React, { useState, useEffect, useRef } from "react";
 
+function useWindowWidth() {
+  const [w, setW] = useState(window.innerWidth);
+  useEffect(() => {
+    const fn = () => setW(window.innerWidth);
+    window.addEventListener("resize", fn);
+    return () => window.removeEventListener("resize", fn);
+  }, []);
+  return w;
+}
+
 const USERS = ["Douglas", "Camilla"];
 
 const STORE_EMOJIS = {
@@ -66,9 +76,6 @@ const S = {
     background: "#0e0e14",
     color: "#f0ece4",
     fontFamily: "'DM Sans', sans-serif",
-    maxWidth: 480,
-    margin: "0 auto",
-    position: "relative",
   },
   header: {
     background: "linear-gradient(160deg, #1a1520 0%, #0e0e14 100%)",
@@ -161,7 +168,7 @@ const S = {
     borderRadius: "20px 20px 0 0",
     padding: "24px 20px 36px",
     width: "100%",
-    maxWidth: 480,
+    maxWidth: 600,
     margin: "0 auto",
     border: "1px solid #2a2535",
     borderBottom: "none",
@@ -388,6 +395,9 @@ export default function App() {
   const [modal, setModal] = useState(null); // null | "add" | { card }
   const [showArchived, setShowArchived] = useState(false);
   const [search, setSearch] = useState("");
+  const width = useWindowWidth();
+  const isWide = width >= 700;
+  const isNarrow = width < 320;
 
   useEffect(() => {
     if (userName) localStorage.setItem("kk_user", userName);
@@ -473,42 +483,54 @@ export default function App() {
         ::-webkit-scrollbar { width: 0; }
       `}</style>
 
-      {/* Header */}
+      {/* Header — centrat innehåll på breda skärmar */}
       <div style={S.header}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
-          <div>
-            <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: 26, color: "#d4a847", margin: "0 0 2px", letterSpacing: "-0.3px", display: "flex", alignItems: "center", gap: 8 }}>
-              <img src="/icon.png" alt="" style={{ width: 32, height: 32, borderRadius: 8 }} />
-              KortKollen
-            </h1>
-            <p style={{ margin: 0, fontSize: 13, color: "#5a5070" }}>Hej, <span style={{ color: "#c0b8d0", fontWeight: 600 }}>{userName}</span></p>
+        <div style={{ maxWidth: isWide ? 960 : "100%", margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
+            <div>
+              <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: isNarrow ? 20 : isWide ? 30 : 26, color: "#d4a847", margin: "0 0 2px", letterSpacing: "-0.3px", display: "flex", alignItems: "center", gap: 8 }}>
+                <img src="/icon.png" alt="" style={{ width: isNarrow ? 24 : 32, height: isNarrow ? 24 : 32, borderRadius: 8 }} />
+                KortKollen
+              </h1>
+              <p style={{ margin: 0, fontSize: isNarrow ? 11 : 13, color: "#5a5070" }}>Hej, <span style={{ color: "#c0b8d0", fontWeight: 600 }}>{userName}</span></p>
+            </div>
+            <button onClick={() => { setUserName(null); localStorage.removeItem("kk_user"); }}
+              style={{ background: "none", border: "none", color: "#5a5070", fontSize: 12, cursor: "pointer", padding: "4px 0" }}>
+              Byt →
+            </button>
           </div>
-          <button onClick={() => { setUserName(null); localStorage.removeItem("kk_user"); }}
-            style={{ background: "none", border: "none", color: "#5a5070", fontSize: 12, cursor: "pointer", padding: "4px 0" }}>
-            Byt →
-          </button>
-        </div>
 
-        {/* Stats */}
-        <div style={{ display: "flex", gap: 10 }}>
-          <div style={{ flex: 1, background: "linear-gradient(135deg,#2a2016,#1e1b2e)", border: "1px solid #3a3020", borderRadius: 12, padding: "12px 14px" }}>
-            <div style={{ fontSize: 11, color: "#8a7030", fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" }}>Totalt saldo</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: "#d4a847", marginTop: 2 }}>{totalBalance.toFixed(0)} <span style={{ fontSize: 13, color: "#8a7030" }}>kr</span></div>
-          </div>
-          <div style={{ flex: 1, background: "#1e1b2e", border: "1px solid #2a2535", borderRadius: 12, padding: "12px 14px" }}>
-            <div style={{ fontSize: 11, color: "#8a7fa0", fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" }}>Aktiva kort</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: "#c0b8d0", marginTop: 2 }}>{activeCards.length}</div>
-            {(expiringSoonCount > 0 || expiredCount > 0) && (
-              <div style={{ fontSize: 11, color: expiredCount > 0 ? "#e07070" : "#e0a847", marginTop: 2 }}>
-                {expiredCount > 0 ? `${expiredCount} utgånget` : `${expiringSoonCount} snart utgår`}
+          {/* Stats — fler kolumner på breda skärmar */}
+          <div style={{ display: "grid", gridTemplateColumns: isWide ? "repeat(4, 1fr)" : "1fr 1fr", gap: 10 }}>
+            <div style={{ background: "linear-gradient(135deg,#2a2016,#1e1b2e)", border: "1px solid #3a3020", borderRadius: 12, padding: isNarrow ? "10px 10px" : "12px 14px" }}>
+              <div style={{ fontSize: isNarrow ? 9 : 11, color: "#8a7030", fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" }}>Totalt saldo</div>
+              <div style={{ fontSize: isNarrow ? 18 : 24, fontWeight: 700, color: "#d4a847", marginTop: 2 }}>{totalBalance.toFixed(0)} <span style={{ fontSize: 13, color: "#8a7030" }}>kr</span></div>
+            </div>
+            <div style={{ background: "#1e1b2e", border: "1px solid #2a2535", borderRadius: 12, padding: isNarrow ? "10px 10px" : "12px 14px" }}>
+              <div style={{ fontSize: isNarrow ? 9 : 11, color: "#8a7fa0", fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" }}>Aktiva kort</div>
+              <div style={{ fontSize: isNarrow ? 18 : 24, fontWeight: 700, color: "#c0b8d0", marginTop: 2 }}>{activeCards.length}</div>
+              {(expiringSoonCount > 0 || expiredCount > 0) && (
+                <div style={{ fontSize: 11, color: expiredCount > 0 ? "#e07070" : "#e0a847", marginTop: 2 }}>
+                  {expiredCount > 0 ? `${expiredCount} utgånget` : `${expiringSoonCount} snart utgår`}
+                </div>
+              )}
+            </div>
+            {isWide && <>
+              <div style={{ background: "#1e1b2e", border: "1px solid #2a2535", borderRadius: 12, padding: "12px 14px" }}>
+                <div style={{ fontSize: 11, color: "#8a7fa0", fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" }}>Arkiverade</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: "#5a5070", marginTop: 2 }}>{archivedCards.length}</div>
               </div>
-            )}
+              <div style={{ background: "#1e1b2e", border: "1px solid #2a2535", borderRadius: 12, padding: "12px 14px" }}>
+                <div style={{ fontSize: 11, color: "#8a7fa0", fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" }}>Utgångna</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: expiredCount > 0 ? "#e07070" : "#5a5070", marginTop: 2 }}>{expiredCount}</div>
+              </div>
+            </>}
           </div>
         </div>
       </div>
 
       {/* Body */}
-      <div style={{ padding: "16px 16px 100px" }}>
+      <div style={{ padding: isNarrow ? "12px 10px 100px" : isWide ? "20px 32px 100px" : "16px 16px 100px", maxWidth: isWide ? 960 : "100%", margin: "0 auto" }}>
         {/* Search */}
         <div style={{ position: "relative", marginBottom: 16 }}>
           <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#5a5070", fontSize: 15 }}>🔍</span>
@@ -528,7 +550,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Cards */}
+        {/* Cards — grid på breda skärmar */}
         {displayCards.length === 0 ? (
           <div style={{ textAlign: "center", padding: "48px 0", color: "#5a5070" }}>
             <img src="/icon.png" alt="" style={{ width: 72, height: 72, borderRadius: 16, marginBottom: 12, opacity: 0.5 }} />
@@ -538,11 +560,13 @@ export default function App() {
             {!showArchived && <div style={{ fontSize: 13 }}>Tryck på + för att lägga till ett presentkort</div>}
           </div>
         ) : (
-          displayCards.map((card, i) => (
-            <div key={card.id} style={{ animation: `fadeIn ${0.1 + i * 0.06}s ease` }}>
-              <GiftCardItem card={card} onClick={() => setModal({ card })} />
-            </div>
-          ))
+          <div style={{ display: isWide ? "grid" : "block", gridTemplateColumns: isWide ? "repeat(2, 1fr)" : undefined, gap: isWide ? 12 : undefined }}>
+            {displayCards.map((card, i) => (
+              <div key={card.id} style={{ animation: `fadeIn ${0.1 + i * 0.06}s ease` }}>
+                <GiftCardItem card={card} onClick={() => setModal({ card })} />
+              </div>
+            ))}
+          </div>
         )}
 
         {/* Activity feed */}
